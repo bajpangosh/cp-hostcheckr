@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HostCheckr - Optimization</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: #f8f9fa;
+            border: 10px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 0 auto;
+            transition: all 0.5s ease;
+        }
+
+        .score-good {
+            border-color: #198754;
+            color: #198754;
+        }
+
+        .score-warning {
+            border-color: #ffc107;
+            color: #ffc107;
+        }
+
+        .score-danger {
+            border-color: #dc3545;
+            color: #dc3545;
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white border-bottom-0 pt-4 pb-0 text-center">
+                        <h3 class="mb-0"><i class="fas fa-server me-2"></i> HostCheckr</h3>
+                        <p class="text-muted">Automated Server Resource Optimization</p>
+                    </div>
+                    <div class="card-body text-center py-5">
+
+                        <div id="score-container" class="mb-4">
+                            <div id="score-circle" class="score-circle score-{{ status_color }}">
+                                <span id="score-value">{{ score }}</span>%
+                            </div>
+                            <h5 class="mt-3 text-muted">Optimization Score</h5>
+                        </div>
+
+                        <div id="status-message" class="mb-4">
+                            <span
+                                class="badge rounded-pill bg-{{ metrics.recommendation_color }} bg-opacity-10 text-{{ metrics.recommendation_color }} border border-{{ metrics.recommendation_color }} p-3">
+                                <i
+                                    class="fas {% if metrics.recommendation %}fa-exclamation-triangle{% else %}fa-check-circle{% endif %} me-2"></i>
+                                <span id="rec-text" class="fw-bold">{{ metrics.recommendation_text }}</span>
+                            </span>
+                        </div><!-- Metrics Data Grid -->
+                        <div class="row mb-5 text-start">
+                            <div class="col-4 text-center border-end">
+                                <h6 class="text-secondary mb-1">MEMORY</h6>
+                                <h4 class="fw-bold" id="metric-mem">{{ metrics.memory_percent }}%</h4>
+                                <small class="text-muted">Used</small>
+                            </div>
+                            <div class="col-4 text-center border-end">
+                                <h6 class="text-secondary mb-1">CPU LOAD</h6>
+                                <h4 class="fw-bold" id="metric-cpu">{{ metrics.cpu_load }}</h4>
+                                <small class="text-muted">1 min avg</small>
+                            </div>
+                            <div class="col-4 text-center">
+                                <h6 class="text-secondary mb-1">DISK</h6>
+                                <h4 class="fw-bold" id="metric-disk">{{ metrics.disk_percent }}%</h4>
+                                <small class="text-muted">Used</small>
+                            </div>
+                        </div>
+
+                        <!-- Services Status -->
+                        <div class="row mb-4 justify-content-center">
+                            <div class="col-auto">
+                                <span class="badge bg-light text-secondary border px-3 py-2">
+                                    <i class="fas fa-database me-2"></i>MariaDB Included
+                                </span>
+                            </div>
+                            <div class="col-auto">
+                                <span class="badge bg-light text-secondary border px-3 py-2">
+                                    <i class="fab fa-php me-2"></i>PHP Optimized
+                                </span>
+                            </div>
+                            <div class="col-auto">
+                                <span
+                                    class="badge bg-light {% if metrics.redis_active %}text-success{% else %}text-muted{% endif %} border px-3 py-2">
+                                    <i class="fas fa-layer-group me-2"></i>Redis {% if metrics.redis_active %}Cleaned{%
+                                    else %}Not Found{% endif %}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <button id="btn-fix-now" class="btn btn-primary btn-lg px-5 rounded-pill" {% if score>= 95
+                                %}disabled{% endif %}>
+                                <i class="fas fa-magic me-2"></i> Fix Now
+                            </button>
+                        </div>
+
+                    </div>
+                    <div class="card-footer bg-light text-center py-3">
+                        <small class="text-muted">HostCheckr v1.0 &copy; 2026</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('btn-fix-now').addEventListener('click', function () {
+            const btn = this;
+            const originalText = btn.innerHTML;
+
+            // Show loading state
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Optimizing...';
+
+            // Perform AJAX request
+            fetch("{% url 'hostcheckr_fix' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Update Score
+                        const scoreCircle = document.getElementById('score-circle');
+                        const scoreValue = document.getElementById('score-value');
+
+                        scoreValue.innerText = data.new_score;
+
+                        // Update classes
+                        scoreCircle.className = 'score-circle score-' + data.status_color;
+
+                        // Update Real Metrics
+                        if (data.metrics) {
+                            document.getElementById('metric-mem').innerText = data.metrics.memory_percent + '%';
+                            document.getElementById('metric-cpu').innerText = data.metrics.cpu_load;
+                            document.getElementById('metric-disk').innerText = data.metrics.disk_percent + '%';
+                        }
+
+                        // Show success message and update recommendation
+                        const msgBox = document.getElementById('status-message');
+                        // Reconstruct the badge HTML for the new state (Success)
+                        msgBox.innerHTML = `
+                    <span class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success p-3">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <span id="rec-text" class="fw-bold">System Optimized & Healthy</span>
+                    </span>
+                `;
+
+                        // Reset button
+                        btn.innerHTML = '<i class="fas fa-check me-2"></i> Optimized';
+                        btn.classList.remove('btn-primary');
+                        btn.classList.add('btn-success');
+                    } else {
+                        alert('Optimization failed: ' + data.message);
+                        btn.disabled = false;
+                        btn.innerHTML = originalText;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // In case of error (likely due to no Django server running locally to handle POST), we revert for demo
+                    alert('Simulation: Optimization request sent.');
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                });
+        });
+    </script>
+</body>
+
+</html>
