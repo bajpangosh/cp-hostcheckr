@@ -23,9 +23,11 @@ You need to create a zip archive of the repository.
 Upload `HostCheckr.zip` to your CyberPanel server in the directory:
 `/usr/local/CyberCP/pluginInstaller`
 
-You can use SCP or SFTP:
+You can upload the file manually, **OR** simply download it directly on the server:
+
 ```bash
-scp HostCheckr.zip root@<your-server-ip>:/usr/local/CyberCP/pluginInstaller/
+cd /usr/local/CyberCP/pluginInstaller
+wget https://github.com/bajpangosh/cp-hostcheckr/archive/refs/heads/main.zip -O HostCheckr.zip
 ```
 
 ### Step 3: Run the Installer
