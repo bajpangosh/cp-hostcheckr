@@ -78,9 +78,9 @@ def get_system_metrics():
 
     # 5. Redis Status Check
     try:
-        subprocess.check_call(['pgrep', 'redis-server'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.check_call(['pgrep', 'redis-server'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5)
         metrics['redis_active'] = True
-    except (subprocess.CalledProcessError, FileNotFoundError):
+    except (subprocess.CalledProcessError, FileNotFoundError, subprocess.TimeoutExpired):
         metrics['redis_active'] = False
 
     metrics['score'] = max(0, min(100, score))
@@ -128,7 +128,7 @@ def fix_optimization(request):
         
         # 1. Sync
         try:
-            subprocess.run(['sync'], check=True)
+            subprocess.run(['sync'], check=True, timeout=10)
         except Exception:
             pass
 
@@ -144,22 +144,22 @@ def fix_optimization(request):
             pass
 
         # 3. MariaDB Optimization
-        # optimizing tables reclaims unused space and defragments data files
+        # 'analyze' updates index statistics without locking tables for long periods (unlike 'optimize')
         try:
-            subprocess.run(['mysqlcheck', '-o', '--all-databases'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(['mysqlcheck', '-a', '--all-databases'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=60)
         except Exception:
             pass
 
         # 4. PHP Optimization
         # Killing lsphp processes forces LiteSpeed to spawn fresh ones, clearing OPcache and memory leaks
         try:
-            subprocess.run(['killall', 'lsphp'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(['killall', 'lsphp'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=10)
         except Exception:
             pass
 
         # 5. Redis Optimization (Flush All)
         try:
-            subprocess.run(['redis-cli', 'flushall'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(['redis-cli', 'flushall'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5)
         except Exception:
             pass
 

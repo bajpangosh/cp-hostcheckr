@@ -4,5 +4,7 @@
     "description": "Automated server resource optimization.",
     "author": "HostCheckr Team",
     "website": "https://hostcheckr.com",
-    "icon": "fa-server"
+    "icon": "fa-server",
+    "addSidebar": true,
+    "linkName": "HostCheckr"
 }
