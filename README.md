@@ -12,51 +12,14 @@ A robust resource optimization plugin for CyberPanel that integrates directly wi
   - Flushes Redis cache (if detected).
 - **Responsive UI**: Bootstrap 5 dashboard with AJAX updates.
 
-## Installation
-
-To install **HostCheckr** using the official CyberPanel plugin installer, follow these steps to ensure the directory structure is correct.
-
-### Step 1: Prepare the Plugin Package
-SSH into your server and run the following commands to create a compatible `HostCheckr.zip`.
+## Quick Installation
+Run this single command as root to install or update the plugin automatically:
 
 ```bash
-# Go to the installer directory
-cd /usr/local/CyberCP/pluginInstaller/
-
-# Remove any old versions
-rm -rf cp-hostcheckr
-rm -rf HostCheckr
-rm -f HostCheckr.zip
-
-# Clone the latest code
-git clone https://github.com/bajpangosh/cp-hostcheckr.git cp-hostcheckr
-
-# Move the plugin app folder to the current directory
-mv cp-hostcheckr/HostCheckr .
-
-# Create the zip archive required by the installer
-# (You may need to install zip: apt install zip -y or yum install zip -y)
-zip -r HostCheckr.zip HostCheckr
-
-# Cleanup
-rm -rf cp-hostcheckr
-rm -rf HostCheckr
+wget -O - https://raw.githubusercontent.com/bajpangosh/cp-hostcheckr/main/install.sh | bash
 ```
 
-### Step 2: Run the Installer
-Now that `HostCheckr.zip` is ready, run the installer:
-
-```bash
-python3 pluginInstaller.py install --pluginName HostCheckr
-```
-
-### Step 3: Verify Permissions (Fix for ModuleNotFoundError)
-If you see errors, ensure permissions are correct:
-```bash
-chown -R cyberpanel:cyberpanel /usr/local/CyberCP/HostCheckr
-chmod -R 755 /usr/local/CyberCP/HostCheckr
-systemctl restart lscpd
-```
+This script handles cloning, directory structuring, zipping, installing, and permission fixing for you.
 
 ## Uninstalling
 To remove the plugin:
