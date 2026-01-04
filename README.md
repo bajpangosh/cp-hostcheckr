@@ -50,6 +50,14 @@ Now that `HostCheckr.zip` is ready, run the installer:
 python3 pluginInstaller.py install --pluginName HostCheckr
 ```
 
+### Step 3: Verify Permissions (Fix for ModuleNotFoundError)
+If you see errors, ensure permissions are correct:
+```bash
+chown -R cyberpanel:cyberpanel /usr/local/CyberCP/HostCheckr
+chmod -R 755 /usr/local/CyberCP/HostCheckr
+systemctl restart lscpd
+```
+
 ## Uninstalling
 To remove the plugin:
 

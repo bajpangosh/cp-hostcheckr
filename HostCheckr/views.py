@@ -1,7 +1,6 @@
 import os
 import subprocess
 from django.shortcuts import render
-from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 
 def get_system_metrics():
@@ -97,26 +96,34 @@ def get_system_metrics():
 
     return metrics
 
+from django.http import JsonResponse, HttpResponse
+
+# ... (imports)
+
 @login_required
 def index(request):
     """
     Main dashboard view using real-time system metrics.
     """
-    metrics = get_system_metrics()
-    
-    status_color = "success"
-    if metrics['score'] < 60:
-        status_color = "danger"
-    elif metrics['score'] < 85:
-        status_color = "warning"
+    try:
+        metrics = get_system_metrics()
+        
+        status_color = "success"
+        if metrics['score'] < 60:
+            status_color = "danger"
+        elif metrics['score'] < 85:
+            status_color = "warning"
 
-    context = {
-        'score': metrics['score'],
-        'metrics': metrics,
-        'status_color': status_color,
-        'plugin_name': 'HostCheckr'
-    }
-    return render(request, 'HostCheckr/index.html', context)
+        context = {
+            'score': metrics['score'],
+            'metrics': metrics,
+            'status_color': status_color,
+            'plugin_name': 'HostCheckr'
+        }
+        return render(request, 'HostCheckr/index.html', context)
+    except Exception as e:
+        import traceback
+        return HttpResponse(f"<div style='padding:20px; color:red;'><h3>HostCheckr Error</h3><pre>{str(e)}</pre><br><pre>{traceback.format_exc()}</pre></div>")
 
 @login_required
 def fix_optimization(request):
